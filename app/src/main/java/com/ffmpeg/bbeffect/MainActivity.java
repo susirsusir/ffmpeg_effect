@@ -100,7 +100,7 @@ public class MainActivity extends AppCompatActivity implements EffectPlayListene
     }
 
 //    String videoPath = Environment.getExternalStorageDirectory() + "/default.arf";
-    String videoPath = Environment.getExternalStorageDirectory() + "/NewResource/qixi";
+    String videoPath = Environment.getExternalStorageDirectory() + "/NewResource/qixi0";
 
     public void play_start(View view) {
         surfaceView.setVisibility(View.VISIBLE);

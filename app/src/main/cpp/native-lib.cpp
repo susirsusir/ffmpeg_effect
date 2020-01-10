@@ -89,19 +89,23 @@ Java_com_ffmpeg_bbeffect_MainActivity_videoPlay(JNIEnv *env, jobject instance, j
                                                 jobject surface) {
     const char *path = env->GetStringUTFChars(path_, 0);
 
-    if (javaMethodFieldId != NULL) {
-        env->CallObjectMethod(instance, javaMethodFieldId, 110, 220);
-    }
-
     /***
      * ffmpeg 初始化
      * **/
     av_register_all();
     AVFormatContext *fmt_ctx = avformat_alloc_context();
     if (avformat_open_input(&fmt_ctx, path, NULL, NULL) < 0) {
+        // 特效资源不存在
+        if (javaMethodFieldId != NULL) {
+            env->CallObjectMethod(instance, javaMethodFieldId, 6, 300);
+        }
         return;
     }
     if (avformat_find_stream_info(fmt_ctx, NULL) < 0) {
+        // 没有找到流信息 文件损坏
+        if (javaMethodFieldId != NULL) {
+            env->CallObjectMethod(instance, javaMethodFieldId, 6, 400);
+        }
         return;
     }
     AVStream *avStream = NULL;
@@ -114,14 +118,28 @@ Java_com_ffmpeg_bbeffect_MainActivity_videoPlay(JNIEnv *env, jobject instance, j
         }
     }
     if (video_stream_index == -1) {
+        // 没有找到视频流 文件损坏
+        if (javaMethodFieldId != NULL) {
+            env->CallObjectMethod(instance, javaMethodFieldId, 6, 500);
+        }
         return;
     }
     AVCodecContext *codec_ctx = avcodec_alloc_context3(NULL);
     avcodec_parameters_to_context(codec_ctx, avStream->codecpar);
     AVCodec *avCodec = avcodec_find_decoder(codec_ctx->codec_id);
     if (avcodec_open2(codec_ctx, avCodec, NULL) < 0) {
+        // 解码器初始化失败
+        if (javaMethodFieldId != NULL) {
+            env->CallObjectMethod(instance, javaMethodFieldId, 6, 600);
+        }
         return;
     }
+
+    // 开始播放动效
+    if (javaMethodFieldId != NULL) {
+        env->CallObjectMethod(instance, javaMethodFieldId, 4, 100);
+    }
+
     int y_size = codec_ctx->width * codec_ctx->height;
     AVPacket *pkt = (AVPacket *) malloc(sizeof(AVPacket));
     av_new_packet(pkt, y_size);
@@ -249,6 +267,9 @@ Java_com_ffmpeg_bbeffect_MainActivity_videoPlay(JNIEnv *env, jobject instance, j
         usleep(30000);
         if (av_read_frame(fmt_ctx, pkt) < 0) {
             //播放结束
+            if (javaMethodFieldId != NULL) {
+                env->CallObjectMethod(instance, javaMethodFieldId, 4, 200);
+            }
             break;
         }
         if (pkt->stream_index == video_stream_index) {
