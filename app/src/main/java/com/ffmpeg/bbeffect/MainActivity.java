@@ -58,10 +58,10 @@ public class MainActivity extends AppCompatActivity implements EffectPlayListene
                 }
 
             } else {
-                init();
+                initView();
             }
         } else {
-            init();
+            initView();
         }
     }
 
@@ -83,7 +83,7 @@ public class MainActivity extends AppCompatActivity implements EffectPlayListene
             if (isDenied) {
                 Toast.makeText(this, "请开启权限", Toast.LENGTH_SHORT).show();
             } else {
-                init();
+                initView();
 
             }
         }
@@ -92,10 +92,11 @@ public class MainActivity extends AppCompatActivity implements EffectPlayListene
 
     private SurfaceView surfaceView;
 
-    private void init() {
+    private void initView() {
         surfaceView = findViewById(R.id.surface_view);
         surfaceView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
         surfaceView.setZOrderOnTop(true);
+        initEffectPlay();
     }
 
 //    String videoPath = Environment.getExternalStorageDirectory() + "/default.arf";
@@ -119,8 +120,12 @@ public class MainActivity extends AppCompatActivity implements EffectPlayListene
      */
     public native String stringFromJNI();
 
+
+    public native void initEffectPlay();
+
     @Override
     public void onAnimEvent(int type, int ret) {
+        Log.d("LiveTest","type: " + type + " ret: " + ret);
 
     }
 }

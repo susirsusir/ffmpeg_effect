@@ -25,7 +25,7 @@ Java_com_ffmpeg_bbeffect_MainActivity_stringFromJNI(
 #include <android/native_window_jni.h>
 #include <unistd.h>
 
-extern "C"{
+extern "C" {
 #include <libavformat/avformat.h>
 #include <libavcodec/avcodec.h>
 #include <libavutil/imgutils.h>
@@ -64,14 +64,36 @@ const char *fragmentShaderString = GET_STR(
         }
 );
 
+jmethodID javaMethodFieldId;
+
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_ffmpeg_bbeffect_MainActivity_initEffectPlay(
+        JNIEnv *env,
+        jobject instance) {
+    //获得Java层该对象实例的类引用，即MainActivity类引用
+    jclass activityClass = env->GetObjectClass(instance);
+
+    //获取到方法的(句柄)域ID
+    if (javaMethodFieldId == NULL) {
+        javaMethodFieldId = env->GetMethodID(activityClass, "onAnimEvent", "(II)V");
+    }
+}
+
+
+
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_ffmpeg_bbeffect_MainActivity_videoPlay(JNIEnv *env, jobject instance, jstring path_,
-                                                    jobject surface) {
+                                                jobject surface) {
     const char *path = env->GetStringUTFChars(path_, 0);
 
-    // TODO
-/***
+    if (javaMethodFieldId != NULL) {
+        env->CallObjectMethod(instance, javaMethodFieldId, 110, 220);
+    }
+
+    /***
      * ffmpeg 初始化
      * **/
     av_register_all();
@@ -86,7 +108,7 @@ Java_com_ffmpeg_bbeffect_MainActivity_videoPlay(JNIEnv *env, jobject instance, j
     int video_stream_index = -1;
     for (int i = 0; i < fmt_ctx->nb_streams; i++) {
         if (fmt_ctx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
-            avStream =fmt_ctx->streams[i];
+            avStream = fmt_ctx->streams[i];
             video_stream_index = i;
             break;
         }
@@ -114,10 +136,10 @@ Java_com_ffmpeg_bbeffect_MainActivity_videoPlay(JNIEnv *env, jobject instance, j
     int windowHeight = codec_ctx->height;
     ANativeWindow *nativeWindow = ANativeWindow_fromSurface(env, surface);
 
-    EGLint configSpec[] = { EGL_RED_SIZE, 8,
-                            EGL_GREEN_SIZE, 8,
-                            EGL_BLUE_SIZE, 8,
-                            EGL_SURFACE_TYPE, EGL_WINDOW_BIT, EGL_NONE };
+    EGLint configSpec[] = {EGL_RED_SIZE, 8,
+                           EGL_GREEN_SIZE, 8,
+                           EGL_BLUE_SIZE, 8,
+                           EGL_SURFACE_TYPE, EGL_WINDOW_BIT, EGL_NONE};
 
     EGLDisplay eglDisp = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     EGLint eglMajVers, eglMinVers;
@@ -125,13 +147,13 @@ Java_com_ffmpeg_bbeffect_MainActivity_videoPlay(JNIEnv *env, jobject instance, j
     eglInitialize(eglDisp, &eglMajVers, &eglMinVers);
     eglChooseConfig(eglDisp, configSpec, &eglConf, 1, &numConfigs);
 
-    eglWindow = eglCreateWindowSurface(eglDisp, eglConf,nativeWindow, NULL);
+    eglWindow = eglCreateWindowSurface(eglDisp, eglConf, nativeWindow, NULL);
 
     const EGLint ctxAttr[] = {
             EGL_CONTEXT_CLIENT_VERSION, 2,
             EGL_NONE
     };
-    eglCtx = eglCreateContext(eglDisp, eglConf,EGL_NO_CONTEXT, ctxAttr);
+    eglCtx = eglCreateContext(eglDisp, eglConf, EGL_NO_CONTEXT, ctxAttr);
 
     eglMakeCurrent(eglDisp, eglWindow, eglWindow, eglCtx);
 
@@ -164,7 +186,7 @@ Java_com_ffmpeg_bbeffect_MainActivity_videoPlay(JNIEnv *env, jobject instance, j
 
     ShaderUtils *shaderUtils = new ShaderUtils();
 
-    GLuint programId = shaderUtils->createProgram(vertexShaderString,fragmentShaderString );
+    GLuint programId = shaderUtils->createProgram(vertexShaderString, fragmentShaderString);
     delete shaderUtils;
     GLuint position = (GLuint) glGetAttribLocation(programId, "position");
     GLuint texcoord1 = (GLuint) glGetAttribLocation(programId, "inTexcoord1");
@@ -183,7 +205,7 @@ Java_com_ffmpeg_bbeffect_MainActivity_videoPlay(JNIEnv *env, jobject instance, j
     glVertexAttribPointer(texcoord1, 2, GL_FLOAT, GL_FALSE, 8, textureVertexData);
 
     glEnableVertexAttribArray(texcoord2);
-    glVertexAttribPointer(texcoord2,2,GL_FLOAT,GL_FALSE,8,textureVertexDataBottom);
+    glVertexAttribPointer(texcoord2, 2, GL_FLOAT, GL_FALSE, 8, textureVertexDataBottom);
 
     /***
      * 初始化空的yuv纹理
@@ -191,23 +213,23 @@ Java_com_ffmpeg_bbeffect_MainActivity_videoPlay(JNIEnv *env, jobject instance, j
     GLuint yTextureId;
     GLuint uTextureId;
     GLuint vTextureId;
-    glGenTextures(1,&yTextureId);
+    glGenTextures(1, &yTextureId);
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D,yTextureId);
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glBindTexture(GL_TEXTURE_2D, yTextureId);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glUniform1i(yPlaneTex,0);
+    glUniform1i(yPlaneTex, 0);
 
-    glGenTextures(1,&uTextureId);
+    glGenTextures(1, &uTextureId);
     glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D,uTextureId);
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glBindTexture(GL_TEXTURE_2D, uTextureId);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glUniform1i(uPlaneTex,1);
+    glUniform1i(uPlaneTex, 1);
 
     glGenTextures(1, &vTextureId);
     glActiveTexture(GL_TEXTURE2);
@@ -216,7 +238,7 @@ Java_com_ffmpeg_bbeffect_MainActivity_videoPlay(JNIEnv *env, jobject instance, j
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glUniform1i(vPlaneTex,2);
+    glUniform1i(vPlaneTex, 2);
 
 
     /***
@@ -248,15 +270,20 @@ Java_com_ffmpeg_bbeffect_MainActivity_videoPlay(JNIEnv *env, jobject instance, j
 
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, yTextureId);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, yuvFrame->linesize[0], yuvFrame->height,0, GL_LUMINANCE, GL_UNSIGNED_BYTE, yuvFrame->data[0]);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, yuvFrame->linesize[0], yuvFrame->height, 0,
+                         GL_LUMINANCE, GL_UNSIGNED_BYTE, yuvFrame->data[0]);
 
             glActiveTexture(GL_TEXTURE1);
             glBindTexture(GL_TEXTURE_2D, uTextureId);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE,  yuvFrame->linesize[1], (yuvFrame->height/2) - 1,0, GL_LUMINANCE, GL_UNSIGNED_BYTE, yuvFrame->data[1]);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, yuvFrame->linesize[1],
+                         (yuvFrame->height / 2) - 1, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE,
+                         yuvFrame->data[1]);
 
             glActiveTexture(GL_TEXTURE2);
             glBindTexture(GL_TEXTURE_2D, vTextureId);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE,  yuvFrame->linesize[2], (yuvFrame->height/2) - 1,0, GL_LUMINANCE, GL_UNSIGNED_BYTE, yuvFrame->data[2]);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, yuvFrame->linesize[2],
+                         (yuvFrame->height / 2) - 1, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE,
+                         yuvFrame->data[2]);
 
 
             /***
