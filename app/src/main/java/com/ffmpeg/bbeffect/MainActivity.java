@@ -100,7 +100,7 @@ public class MainActivity extends AppCompatActivity implements EffectPlayListene
     }
 
 //    String videoPath = Environment.getExternalStorageDirectory() + "/default.arf";
-    String videoPath = Environment.getExternalStorageDirectory() + "/NewResource/qixi0";
+    String videoPath = Environment.getExternalStorageDirectory() + "/NewResource/qixi";
 
     public void play_start(View view) {
         surfaceView.setVisibility(View.VISIBLE);
@@ -125,7 +125,13 @@ public class MainActivity extends AppCompatActivity implements EffectPlayListene
 
     @Override
     public void onAnimEvent(int type, int ret) {
-        Log.d("LiveTest","type: " + type + " ret: " + ret);
-
+        Log.d("LiveTest", "type: " + type + " ret: " + ret);
+        if (type == EffectConst.MSG_TYPE_INFO) {
+            if (ret == EffectConst.MSG_STAT_EFFECTS_END) {
+                if (surfaceView != null) {
+                    surfaceView.setVisibility(View.GONE);
+                }
+            }
+        }
     }
 }

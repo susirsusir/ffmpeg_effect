@@ -97,14 +97,14 @@ Java_com_ffmpeg_bbeffect_MainActivity_videoPlay(JNIEnv *env, jobject instance, j
     if (avformat_open_input(&fmt_ctx, path, NULL, NULL) < 0) {
         // 特效资源不存在
         if (javaMethodFieldId != NULL) {
-            env->CallObjectMethod(instance, javaMethodFieldId, 6, 300);
+            env->CallVoidMethod(instance, javaMethodFieldId, 6, 300);
         }
         return;
     }
     if (avformat_find_stream_info(fmt_ctx, NULL) < 0) {
         // 没有找到流信息 文件损坏
         if (javaMethodFieldId != NULL) {
-            env->CallObjectMethod(instance, javaMethodFieldId, 6, 400);
+            env->CallVoidMethod(instance, javaMethodFieldId, 6, 400);
         }
         return;
     }
@@ -120,7 +120,7 @@ Java_com_ffmpeg_bbeffect_MainActivity_videoPlay(JNIEnv *env, jobject instance, j
     if (video_stream_index == -1) {
         // 没有找到视频流 文件损坏
         if (javaMethodFieldId != NULL) {
-            env->CallObjectMethod(instance, javaMethodFieldId, 6, 500);
+            env->CallVoidMethod(instance, javaMethodFieldId, 6, 500);
         }
         return;
     }
@@ -130,14 +130,14 @@ Java_com_ffmpeg_bbeffect_MainActivity_videoPlay(JNIEnv *env, jobject instance, j
     if (avcodec_open2(codec_ctx, avCodec, NULL) < 0) {
         // 解码器初始化失败
         if (javaMethodFieldId != NULL) {
-            env->CallObjectMethod(instance, javaMethodFieldId, 6, 600);
+            env->CallVoidMethod(instance, javaMethodFieldId, 6, 600);
         }
         return;
     }
 
     // 开始播放动效
     if (javaMethodFieldId != NULL) {
-        env->CallObjectMethod(instance, javaMethodFieldId, 4, 100);
+        env->CallVoidMethod(instance, javaMethodFieldId, 4, 100);
     }
 
     int y_size = codec_ctx->width * codec_ctx->height;
@@ -268,7 +268,7 @@ Java_com_ffmpeg_bbeffect_MainActivity_videoPlay(JNIEnv *env, jobject instance, j
         if (av_read_frame(fmt_ctx, pkt) < 0) {
             //播放结束
             if (javaMethodFieldId != NULL) {
-                env->CallObjectMethod(instance, javaMethodFieldId, 4, 200);
+                env->CallVoidMethod(instance, javaMethodFieldId, 4, 200);
             }
             break;
         }
