@@ -21,7 +21,7 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements EffectPlayListener{
 
     // Used to load the 'native-lib' library on application startup.
     static {
@@ -102,7 +102,6 @@ public class MainActivity extends AppCompatActivity {
     String videoPath = Environment.getExternalStorageDirectory() + "/NewResource/qixi";
 
     public void play_start(View view) {
-        Log.d("LiveTest","getScreenWidth:" + getScreenWidth(this) + " getScreenHeight: " + getScreenHeight(this));
         surfaceView.setVisibility(View.VISIBLE);
         surfaceView.postDelayed(new Runnable() {
             @Override
@@ -112,19 +111,6 @@ public class MainActivity extends AppCompatActivity {
         }, 100);
     }
 
-    public static int getScreenHeight(Context context) {
-        DisplayMetrics dm = context.getResources().getDisplayMetrics();
-        return dm.heightPixels;
-    }
-
-    public static int getScreenWidth(Context context) {
-        if (context == null) {
-            return 0;
-        }
-        DisplayMetrics dm = context.getResources().getDisplayMetrics();
-        return dm.widthPixels;
-    }
-
     public native void videoPlay(String path, Surface surface);
 
     /**
@@ -132,4 +118,9 @@ public class MainActivity extends AppCompatActivity {
      * which is packaged with this application.
      */
     public native String stringFromJNI();
+
+    @Override
+    public void onAnimEvent(int type, int ret) {
+
+    }
 }
