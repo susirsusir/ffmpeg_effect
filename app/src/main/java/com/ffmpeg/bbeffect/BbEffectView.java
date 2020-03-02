@@ -5,6 +5,7 @@ import android.graphics.PixelFormat;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.Surface;
 import android.view.SurfaceView;
@@ -27,6 +28,10 @@ public class BbEffectView extends SurfaceView {
     private HandlerThread handlerThread;
     private MsgHandler mHandler;
     private Handler glesHandler;
+
+    private boolean isEffectPlaying;
+    private boolean isNeedStop;
+    private String mEffectPath;
 
     public BbEffectView(Context context) {
         super(context);
@@ -54,20 +59,33 @@ public class BbEffectView extends SurfaceView {
     }
 
     public void setEffectPath(int priority, final String path) {
-        mPriority = priority;
-        setVisibility(View.VISIBLE);
-        if(glesHandler == null){
-            return;
-        }
-        glesHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                BbEffectView.this.videoPlay(path, getHolder().getSurface());
+        if(TextUtils.isEmpty(path)){
+            // 表示需要中止当前动效
+            if(isEffectPlaying){
+                isNeedStop = true;
+                stopEffect();
             }
-        },200);
+        } else {
+            mEffectPath = path;
+            mPriority = priority;
+            if(isNeedStop){
+                return;
+            }
+            setVisibility(View.VISIBLE);
+            if(glesHandler == null){
+                return;
+            }
+            glesHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    BbEffectView.this.videoPlay(path, getHolder().getSurface());
+                }
+            },200);
+        }
+
     }
 
-    public void stopEffect(){
+    private void stopEffect(){
         setVisibility(View.GONE);
         videoStop();
     }
@@ -93,6 +111,27 @@ public class BbEffectView extends SurfaceView {
     }
 
     private void callBackEvent(int type, int ret){
+        if (type == EffectConst.MSG_TYPE_INFO) {
+            if (ret == EffectConst.MSG_STAT_EFFECTS_END) {
+                isEffectPlaying = false;
+                setVisibility(View.GONE);
+                if (isNeedStop) {
+                    isNeedStop = false;
+                    setEffectPath(mPriority, mEffectPath);
+                } else {
+                    callBack(type, ret);
+                }
+            } else if(ret == EffectConst.MSG_STAT_EFFECTS_START){
+                isEffectPlaying = true;
+                callBack(type,ret);
+            }
+        } else {
+            // 表示发生错误
+            callBack(type,ret);
+        }
+    }
+
+    private void callBack(int type, int ret){
         if(mListener!=null){
             mListener.onAnimEvent(mPriority,type,ret);
         }

@@ -267,9 +267,6 @@ Java_com_ffmpeg_bbeffect_BbEffectView_videoPlay(JNIEnv *env, jobject instance, j
         usleep(30000);
         if (av_read_frame(fmt_ctx, pkt) < 0) {
             //播放结束
-            if (javaMethodFieldId != NULL) {
-                env->CallVoidMethod(instance, javaMethodFieldId, 4, 200);
-            }
             break;
         }
         if (pkt->stream_index == video_stream_index) {
@@ -338,6 +335,11 @@ Java_com_ffmpeg_bbeffect_BbEffectView_videoPlay(JNIEnv *env, jobject instance, j
 
     avcodec_close(codec_ctx);
     avformat_close_input(&fmt_ctx);
-
+    /**
+     * 结束播放回调
+     */
+    if (javaMethodFieldId != NULL) {
+        env->CallVoidMethod(instance, javaMethodFieldId, 4, 200);
+    }
     env->ReleaseStringUTFChars(path_, path);
 }

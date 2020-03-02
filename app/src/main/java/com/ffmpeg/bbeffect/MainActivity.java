@@ -100,7 +100,7 @@ public class MainActivity extends AppCompatActivity implements EffectPlayListene
     }
 
     public void play_stop(View view) {
-        surfaceView.stopEffect();
+        surfaceView.setEffectPath(1,"");
         surfaceView.setEffectPath(1,videoPathb);
     }
 
@@ -109,9 +109,9 @@ public class MainActivity extends AppCompatActivity implements EffectPlayListene
         Log.d("LiveTest", "activity type: " + type + " ret: " + ret);
         if (type == EffectConst.MSG_TYPE_INFO) {
             if (ret == EffectConst.MSG_STAT_EFFECTS_END) {
-                if (surfaceView != null) {
-                    surfaceView.setVisibility(View.GONE);
-                }
+//                if (surfaceView != null) {
+//                    surfaceView.setVisibility(View.GONE);
+//                }
             }
         }
     }
