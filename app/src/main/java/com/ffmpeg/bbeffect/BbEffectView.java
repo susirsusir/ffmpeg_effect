@@ -75,12 +75,12 @@ public class BbEffectView extends SurfaceView {
             if(glesHandler == null){
                 return;
             }
-            glesHandler.postDelayed(new Runnable() {
+            glesHandler.post(new Runnable() {
                 @Override
                 public void run() {
                     BbEffectView.this.videoPlay(path, getHolder().getSurface());
                 }
-            },200);
+            });
         }
 
     }

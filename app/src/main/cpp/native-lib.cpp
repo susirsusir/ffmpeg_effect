@@ -264,11 +264,11 @@ Java_com_ffmpeg_bbeffect_BbEffectView_videoPlay(JNIEnv *env, jobject instance, j
      * **/
     int ret;
     while (play) {
-        usleep(30000);
         if (av_read_frame(fmt_ctx, pkt) < 0) {
             //播放结束
             break;
         }
+        usleep(30000);
         if (pkt->stream_index == video_stream_index) {
             ret = avcodec_send_packet(codec_ctx, pkt);
             if (ret < 0 && ret != AVERROR(EAGAIN) && ret != AVERROR_EOF) {
