@@ -88,7 +88,7 @@ public class MainActivity extends AppCompatActivity implements EffectPlayListene
     }
 
     String videoPatha =  "/storage/emulated/0/xingjiabi/live/defaulta.arf";
-    String videoPathb =  "/storage/emulated/0/xingjiabi/live/defaulta.arf";
+    String videoPathb =  "/storage/emulated/0/xingjiabi/live/defaultb.arf";
 
 
     public void play_start(View view) {
@@ -100,7 +100,7 @@ public class MainActivity extends AppCompatActivity implements EffectPlayListene
     }
 
     public void play_stop(View view) {
-        surfaceView.videoStop();
+        surfaceView.stopEffect();
     }
 
     @Override
