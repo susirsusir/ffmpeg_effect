@@ -101,6 +101,7 @@ public class MainActivity extends AppCompatActivity implements EffectPlayListene
 
     public void play_stop(View view) {
         surfaceView.stopEffect();
+        surfaceView.setEffectPath(1,videoPathb);
     }
 
     @Override
