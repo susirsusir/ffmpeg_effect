@@ -11,5 +11,5 @@ public interface EffectPlayListener {
      * @param type  消息类型  分为：信息  错误
      * @param ret   消息码
      */
-    void onAnimEvent(int type, int ret);
+    void onAnimEvent(int priority, int type, int ret);
 }

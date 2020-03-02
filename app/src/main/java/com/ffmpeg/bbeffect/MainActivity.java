@@ -1,21 +1,15 @@
 package com.ffmpeg.bbeffect;
 
 import android.Manifest;
-import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
-import android.graphics.PixelFormat;
 import android.os.Build;
-import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.PermissionChecker;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.Surface;
-import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Toast;
 
@@ -23,10 +17,6 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements EffectPlayListener{
 
-    // Used to load the 'native-lib' library on application startup.
-    static {
-        System.loadLibrary("native-lib");
-    }
 
     private String[] denied;
     private String[] permissions = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
@@ -90,42 +80,32 @@ public class MainActivity extends AppCompatActivity implements EffectPlayListene
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
-    private SurfaceView surfaceView;
+    private BbEffectView surfaceView;
 
     private void initView() {
         surfaceView = findViewById(R.id.surface_view);
-        surfaceView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
-        surfaceView.setZOrderOnTop(true);
-        initEffectPlay();
+        surfaceView.setEffectPlayListener(this);
     }
 
-//    String videoPath = Environment.getExternalStorageDirectory() + "/default.arf";
-    String videoPath = Environment.getExternalStorageDirectory() + "/NewResource/qixi";
+    String videoPatha =  "/storage/emulated/0/xingjiabi/live/defaulta.arf";
+    String videoPathb =  "/storage/emulated/0/xingjiabi/live/defaulta.arf";
+
 
     public void play_start(View view) {
-        surfaceView.setVisibility(View.VISIBLE);
-        surfaceView.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                videoPlay(videoPath, surfaceView.getHolder().getSurface());
-            }
-        }, 100);
+        surfaceView.setEffectPath(1,videoPatha);
     }
 
-    public native void videoPlay(String path, Surface surface);
+    public void play_startb(View view) {
+        surfaceView.setEffectPath(1,videoPathb);
+    }
 
-    /**
-     * A native method that is implemented by the 'native-lib' native library,
-     * which is packaged with this application.
-     */
-    public native String stringFromJNI();
-
-
-    public native void initEffectPlay();
+    public void play_stop(View view) {
+        surfaceView.videoStop();
+    }
 
     @Override
-    public void onAnimEvent(int type, int ret) {
-        Log.d("LiveTest", "type: " + type + " ret: " + ret);
+    public void onAnimEvent(int priority,int type, int ret) {
+        Log.d("LiveTest", "activity type: " + type + " ret: " + ret);
         if (type == EffectConst.MSG_TYPE_INFO) {
             if (ret == EffectConst.MSG_STAT_EFFECTS_END) {
                 if (surfaceView != null) {

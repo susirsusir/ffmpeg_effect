@@ -9,16 +9,7 @@
 #define ALOGW(...) ((void)__android_log_print(ANDROID_LOG_WARN, LOG_TAG, __VA_ARGS__))
 #define ALOGE(...) ((void)__android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__))
 
-extern "C"
-JNIEXPORT jstring
 
-JNICALL
-Java_com_ffmpeg_bbeffect_MainActivity_stringFromJNI(
-        JNIEnv *env,
-        jobject /* this */) {
-    std::string hello = "Hello from C++";
-    return env->NewStringUTF(hello.c_str());
-}
 
 #include "ShaderUtils.h"
 #include <EGL/egl.h>
@@ -66,10 +57,11 @@ const char *fragmentShaderString = GET_STR(
 
 jmethodID javaMethodFieldId;
 
+bool play = true;
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_ffmpeg_bbeffect_MainActivity_initEffectPlay(
+Java_com_ffmpeg_bbeffect_BbEffectView_initEffectPlay(
         JNIEnv *env,
         jobject instance) {
     //获得Java层该对象实例的类引用，即MainActivity类引用
@@ -82,11 +74,19 @@ Java_com_ffmpeg_bbeffect_MainActivity_initEffectPlay(
 }
 
 
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_ffmpeg_bbeffect_BbEffectView_videoStop(
+        JNIEnv *env,
+        jobject instance) {
+    play = false;
+}
+
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_ffmpeg_bbeffect_MainActivity_videoPlay(JNIEnv *env, jobject instance, jstring path_,
-                                                jobject surface) {
+Java_com_ffmpeg_bbeffect_BbEffectView_videoPlay(JNIEnv *env, jobject instance, jstring path_,
+                                              jobject surface) {
     const char *path = env->GetStringUTFChars(path_, 0);
 
     /***
@@ -134,7 +134,7 @@ Java_com_ffmpeg_bbeffect_MainActivity_videoPlay(JNIEnv *env, jobject instance, j
         }
         return;
     }
-
+    play = true;
     // 开始播放动效
     if (javaMethodFieldId != NULL) {
         env->CallVoidMethod(instance, javaMethodFieldId, 4, 100);
@@ -263,7 +263,7 @@ Java_com_ffmpeg_bbeffect_MainActivity_videoPlay(JNIEnv *env, jobject instance, j
      * 开始解码
      * **/
     int ret;
-    while (1) {
+    while (play) {
         usleep(30000);
         if (av_read_frame(fmt_ctx, pkt) < 0) {
             //播放结束

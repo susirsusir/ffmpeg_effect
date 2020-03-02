@@ -13,7 +13,7 @@
         android:scaleType="fitXY"
         android:src="@mipmap/bg_zhubo" />
 
-    <SurfaceView
+    <com.ffmpeg.bbeffect.BbEffectView
         android:id="@+id/surface_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -23,9 +23,26 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:onClick="play_start"
-        android:text="播放"
+        android:text="播放a"
         android:layout_marginTop="100dp"
         android:layout_marginLeft="80dp"/>
+
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="play_startb"
+        android:text="播放b"
+        android:layout_marginTop="170dp"
+        android:layout_marginLeft="80dp"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="play_stop"
+        android:text="暂停"
+        android:layout_marginTop="100dp"
+        android:layout_marginLeft="180dp"/>
 
 
 </RelativeLayout>
