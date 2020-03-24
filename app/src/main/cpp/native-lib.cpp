@@ -23,37 +23,43 @@ extern "C" {
 #include <libavfilter/avfilter.h>
 }
 
-#define GET_STR(x) #x
-const char *vertexShaderString = GET_STR(
-        attribute vec3 position;
-        attribute vec2 inTexcoord1;
-        attribute vec2 inTexcoord2;
-        varying vec2 texcoord1;
-        varying vec2 texcoord2;
-        void main() {
-            gl_Position = vec4(position, 1.0);
-            texcoord1 = inTexcoord1;
-            texcoord2 = inTexcoord2;
-        }
-);
-const char *fragmentShaderString = GET_STR(
-        precision mediump float;
-        varying vec2 texcoord1;
-        varying vec2 texcoord2;
-        uniform sampler2D yPlaneTex;
-        uniform sampler2D uPlaneTex;
-        uniform sampler2D vPlaneTex;
-        void main() {
-            //因为是YUV的一个平面，所以采样后的r,g,b,a这四个参数的数值是一样的 所以这里统一取r即可
-            vec4 c = vec4((texture2D(yPlaneTex, texcoord1).r - 16. / 255.) * 1.164);
-            vec4 U = vec4(texture2D(uPlaneTex, texcoord1).r - 128. / 255.);
-            vec4 V = vec4(texture2D(vPlaneTex, texcoord1).r - 128. / 255.);
-            c += V * vec4(1.596, -0.813, 0, 0);
-            c += U * vec4(0, -0.392, 2.017, 0);
-            c.a = texture2D(yPlaneTex, texcoord2).r;
-            gl_FragColor = c;
-        }
-);
+typedef struct {
+    char factor;
+    char *value;
+    int length;
+    char decoded;
+} XHBGLESShaderData;
+
+/* 解析出混淆的值 */
+const char *xhb_GLESCString(const XHBGLESShaderData *data) {
+    if (data->decoded == 1)
+        return data->value;
+    for (int i = 0; i < data->length; i++) {
+        data->value[i] ^= data->factor;
+    }
+    ((XHBGLESShaderData *) data)->decoded = 1;
+    return data->value;
+}
+
+
+/* 顶点着色器*/
+static XHBGLESShaderData xhb_vs = {
+        .factor = (char)38,
+        .value = (char []){(char)6,(char)6,(char)6,(char)6,(char)6,(char)6,(char)6,(char)6,(char)71,(char)82,(char)82,(char)84,(char)79,(char)68,(char)83,(char)82,(char)67,(char)6,(char)80,(char)67,(char)69,(char)21,(char)6,(char)86,(char)73,(char)85,(char)79,(char)82,(char)79,(char)73,(char)72,(char)29,(char)44,(char)6,(char)6,(char)6,(char)6,(char)6,(char)6,(char)6,(char)6,(char)71,(char)82,(char)82,(char)84,(char)79,(char)68,(char)83,(char)82,(char)67,(char)6,(char)80,(char)67,(char)69,(char)20,(char)6,(char)79,(char)72,(char)114,(char)67,(char)94,(char)69,(char)73,(char)73,(char)84,(char)66,(char)23,(char)29,(char)44,(char)6,(char)6,(char)6,(char)6,(char)6,(char)6,(char)6,(char)6,(char)71,(char)82,(char)82,(char)84,(char)79,(char)68,(char)83,(char)82,(char)67,(char)6,(char)80,(char)67,(char)69,(char)20,(char)6,(char)79,(char)72,(char)114,(char)67,(char)94,(char)69,(char)73,(char)73,(char)84,(char)66,(char)20,(char)29,(char)44,(char)6,(char)6,(char)6,(char)6,(char)6,(char)6,(char)6,(char)6,(char)80,(char)71,(char)84,(char)95,(char)79,(char)72,(char)65,(char)6,(char)80,(char)67,(char)69,(char)20,(char)6,(char)82,(char)67,(char)94,(char)69,(char)73,(char)73,(char)84,(char)66,(char)23,(char)29,(char)44,(char)6,(char)6,(char)6,(char)6,(char)6,(char)6,(char)6,(char)6,(char)80,(char)71,(char)84,(char)95,(char)79,(char)72,(char)65,(char)6,(char)80,(char)67,(char)69,(char)20,(char)6,(char)82,(char)67,(char)94,(char)69,(char)73,(char)73,(char)84,(char)66,(char)20,(char)29,(char)44,(char)6,(char)6,(char)6,(char)6,(char)6,(char)6,(char)6,(char)6,(char)80,(char)73,(char)79,(char)66,(char)6,(char)75,(char)71,(char)79,(char)72,(char)14,(char)15,(char)6,(char)93,(char)44,(char)6,(char)6,(char)6,(char)6,(char)6,(char)6,(char)6,(char)6,(char)6,(char)6,(char)6,(char)6,(char)65,(char)74,(char)121,(char)118,(char)73,(char)85,(char)79,(char)82,(char)79,(char)73,(char)72,(char)6,(char)27,(char)6,(char)80,(char)67,(char)69,(char)18,(char)14,(char)86,(char)73,(char)85,(char)79,(char)82,(char)79,(char)73,(char)72,(char)10,(char)6,(char)23,(char)8,(char)22,(char)15,(char)29,(char)44,(char)6,(char)6,(char)6,(char)6,(char)6,(char)6,(char)6,(char)6,(char)6,(char)6,(char)6,(char)6,(char)82,(char)67,(char)94,(char)69,(char)73,(char)73,(char)84,(char)66,(char)23,(char)6,(char)27,(char)6,(char)79,(char)72,(char)114,(char)67,(char)94,(char)69,(char)73,(char)73,(char)84,(char)66,(char)23,(char)29,(char)44,(char)6,(char)6,(char)6,(char)6,(char)6,(char)6,(char)6,(char)6,(char)6,(char)6,(char)6,(char)6,(char)82,(char)67,(char)94,(char)69,(char)73,(char)73,(char)84,(char)66,(char)20,(char)6,(char)27,(char)6,(char)79,(char)72,(char)114,(char)67,(char)94,(char)69,(char)73,(char)73,(char)84,(char)66,(char)20,(char)29,(char)44,(char)6,(char)6,(char)6,(char)6,(char)6,(char)6,(char)6,(char)6,(char)91,0},
+        .length = 321
+};
+
+const XHBGLESShaderData * const _3758971219 = &xhb_vs;
+
+/* 片段着色器 */
+static XHBGLESShaderData xhb_fs = {
+        .factor = (char)108,
+        .value = (char []){(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)28,(char)30,(char)9,(char)15,(char)5,(char)31,(char)5,(char)3,(char)2,(char)76,(char)1,(char)9,(char)8,(char)5,(char)25,(char)1,(char)28,(char)76,(char)10,(char)0,(char)3,(char)13,(char)24,(char)87,(char)102,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)26,(char)13,(char)30,(char)21,(char)5,(char)2,(char)11,(char)76,(char)26,(char)9,(char)15,(char)94,(char)76,(char)24,(char)9,(char)20,(char)15,(char)3,(char)3,(char)30,(char)8,(char)93,(char)87,(char)102,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)26,(char)13,(char)30,(char)21,(char)5,(char)2,(char)11,(char)76,(char)26,(char)9,(char)15,(char)94,(char)76,(char)24,(char)9,(char)20,(char)15,(char)3,(char)3,(char)30,(char)8,(char)94,(char)87,(char)102,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)25,(char)2,(char)5,(char)10,(char)3,(char)30,(char)1,(char)76,(char)31,(char)13,(char)1,(char)28,(char)0,(char)9,(char)30,(char)94,(char)40,(char)76,(char)21,(char)60,(char)0,(char)13,(char)2,(char)9,(char)56,(char)9,(char)20,(char)87,(char)102,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)25,(char)2,(char)5,(char)10,(char)3,(char)30,(char)1,(char)76,(char)31,(char)13,(char)1,(char)28,(char)0,(char)9,(char)30,(char)94,(char)40,(char)76,(char)25,(char)60,(char)0,(char)13,(char)2,(char)9,(char)56,(char)9,(char)20,(char)87,(char)102,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)25,(char)2,(char)5,(char)10,(char)3,(char)30,(char)1,(char)76,(char)31,(char)13,(char)1,(char)28,(char)0,(char)9,(char)30,(char)94,(char)40,(char)76,(char)26,(char)60,(char)0,(char)13,(char)2,(char)9,(char)56,(char)9,(char)20,(char)87,(char)102,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)26,(char)3,(char)5,(char)8,(char)76,(char)1,(char)13,(char)5,(char)2,(char)68,(char)69,(char)76,(char)23,(char)102,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)26,(char)9,(char)15,(char)88,(char)76,(char)15,(char)76,(char)81,(char)76,(char)26,(char)9,(char)15,(char)88,(char)68,(char)68,(char)24,(char)9,(char)20,(char)24,(char)25,(char)30,(char)9,(char)94,(char)40,(char)68,(char)21,(char)60,(char)0,(char)13,(char)2,(char)9,(char)56,(char)9,(char)20,(char)64,(char)76,(char)24,(char)9,(char)20,(char)15,(char)3,(char)3,(char)30,(char)8,(char)93,(char)69,(char)66,(char)30,(char)76,(char)65,(char)76,(char)93,(char)90,(char)66,(char)76,(char)67,(char)76,(char)94,(char)89,(char)89,(char)66,(char)69,(char)76,(char)70,(char)76,(char)93,(char)66,(char)93,(char)90,(char)88,(char)69,(char)87,(char)102,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)26,(char)9,(char)15,(char)88,(char)76,(char)57,(char)76,(char)81,(char)76,(char)26,(char)9,(char)15,(char)88,(char)68,(char)24,(char)9,(char)20,(char)24,(char)25,(char)30,(char)9,(char)94,(char)40,(char)68,(char)25,(char)60,(char)0,(char)13,(char)2,(char)9,(char)56,(char)9,(char)20,(char)64,(char)76,(char)24,(char)9,(char)20,(char)15,(char)3,(char)3,(char)30,(char)8,(char)93,(char)69,(char)66,(char)30,(char)76,(char)65,(char)76,(char)93,(char)94,(char)84,(char)66,(char)76,(char)67,(char)76,(char)94,(char)89,(char)89,(char)66,(char)69,(char)87,(char)102,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)26,(char)9,(char)15,(char)88,(char)76,(char)58,(char)76,(char)81,(char)76,(char)26,(char)9,(char)15,(char)88,(char)68,(char)24,(char)9,(char)20,(char)24,(char)25,(char)30,(char)9,(char)94,(char)40,(char)68,(char)26,(char)60,(char)0,(char)13,(char)2,(char)9,(char)56,(char)9,(char)20,(char)64,(char)76,(char)24,(char)9,(char)20,(char)15,(char)3,(char)3,(char)30,(char)8,(char)93,(char)69,(char)66,(char)30,(char)76,(char)65,(char)76,(char)93,(char)94,(char)84,(char)66,(char)76,(char)67,(char)76,(char)94,(char)89,(char)89,(char)66,(char)69,(char)87,(char)102,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)15,(char)76,(char)71,(char)81,(char)76,(char)58,(char)76,(char)70,(char)76,(char)26,(char)9,(char)15,(char)88,(char)68,(char)93,(char)66,(char)89,(char)85,(char)90,(char)64,(char)76,(char)65,(char)92,(char)66,(char)84,(char)93,(char)95,(char)64,(char)76,(char)92,(char)64,(char)76,(char)92,(char)69,(char)87,(char)102,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)15,(char)76,(char)71,(char)81,(char)76,(char)57,(char)76,(char)70,(char)76,(char)26,(char)9,(char)15,(char)88,(char)68,(char)92,(char)64,(char)76,(char)65,(char)92,(char)66,(char)95,(char)85,(char)94,(char)64,(char)76,(char)94,(char)66,(char)92,(char)93,(char)91,(char)64,(char)76,(char)92,(char)69,(char)87,(char)102,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)15,(char)66,(char)13,(char)76,(char)81,(char)76,(char)24,(char)9,(char)20,(char)24,(char)25,(char)30,(char)9,(char)94,(char)40,(char)68,(char)21,(char)60,(char)0,(char)13,(char)2,(char)9,(char)56,(char)9,(char)20,(char)64,(char)76,(char)24,(char)9,(char)20,(char)15,(char)3,(char)3,(char)30,(char)8,(char)94,(char)69,(char)66,(char)30,(char)87,(char)102,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)11,(char)0,(char)51,(char)42,(char)30,(char)13,(char)11,(char)47,(char)3,(char)0,(char)3,(char)30,(char)76,(char)81,(char)76,(char)15,(char)87,(char)102,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)76,(char)17,0},
+        .length = 655
+};
+
+
+const XHBGLESShaderData * const _3800906352 = &xhb_fs;
 
 jmethodID javaMethodFieldId;
 
@@ -204,7 +210,7 @@ Java_com_ffmpeg_bbeffect_BbEffectView_videoPlay(JNIEnv *env, jobject instance, j
 
     ShaderUtils *shaderUtils = new ShaderUtils();
 
-    GLuint programId = shaderUtils->createProgram(vertexShaderString, fragmentShaderString);
+    GLuint programId = shaderUtils->createProgram(xhb_GLESCString(_3758971219), xhb_GLESCString(_3800906352));
     delete shaderUtils;
     GLuint position = (GLuint) glGetAttribLocation(programId, "position");
     GLuint texcoord1 = (GLuint) glGetAttribLocation(programId, "inTexcoord1");
