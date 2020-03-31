@@ -87,8 +87,8 @@ public class MainActivity extends AppCompatActivity implements EffectPlayListene
         surfaceView.setEffectPlayListener(this);
     }
 
-    String videoPatha =  "/storage/emulated/0/xingjiabi/live/defaulta.arf";
-    String videoPathb =  "/storage/emulated/0/xingjiabi/live/defaultb.arf";
+    String videoPatha =  "/storage/emulated/0/xingjiabi/live/zhizunbao.arf";
+    String videoPathb =  "/storage/emulated/0/xingjiabi/live/zhizunbao.arf";
 
 
     public void play_start(View view) {
