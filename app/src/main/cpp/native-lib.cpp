@@ -141,10 +141,6 @@ Java_com_ffmpeg_bbeffect_BbEffectView_videoPlay(JNIEnv *env, jobject instance, j
         return;
     }
     play = true;
-    // 开始播放动效
-    if (javaMethodFieldId != NULL) {
-        env->CallVoidMethod(instance, javaMethodFieldId, 4, 100);
-    }
 
     int y_size = codec_ctx->width * codec_ctx->height;
     AVPacket *pkt = (AVPacket *) malloc(sizeof(AVPacket));
@@ -179,8 +175,21 @@ Java_com_ffmpeg_bbeffect_BbEffectView_videoPlay(JNIEnv *env, jobject instance, j
     };
     eglCtx = eglCreateContext(eglDisp, eglConf, EGL_NO_CONTEXT, ctxAttr);
 
-    eglMakeCurrent(eglDisp, eglWindow, eglWindow, eglCtx);
-
+    if (eglCtx == EGL_NO_CONTEXT) {
+        if (javaMethodFieldId != NULL) {
+            env->CallVoidMethod(instance, javaMethodFieldId, 6, 800);
+        }
+        return;
+    }
+    int makeCurrentResult = eglMakeCurrent(eglDisp, eglWindow, eglWindow, eglCtx);
+    ALOGI("%s%d","eglMakeCurrent: ",makeCurrentResult);
+    if (makeCurrentResult == EGL_FALSE) {
+        if (javaMethodFieldId != NULL) {
+            env->CallVoidMethod(instance, javaMethodFieldId, 6, 900);
+        }
+        return;
+    }
+    ALOGI("%s%s%d%s%d","setBuffersGeometry","windowWidth",windowWidth,"windowHeight",windowHeight);
     ANativeWindow_setBuffersGeometry(nativeWindow, windowWidth, windowHeight,
                                      WINDOW_FORMAT_RGBA_8888);
 
@@ -264,6 +273,10 @@ Java_com_ffmpeg_bbeffect_BbEffectView_videoPlay(JNIEnv *env, jobject instance, j
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glUniform1i(vPlaneTex, 2);
 
+    // 开始播放动效
+    if (javaMethodFieldId != NULL) {
+        env->CallVoidMethod(instance, javaMethodFieldId, 4, 100);
+    }
 
     /***
      * 开始解码

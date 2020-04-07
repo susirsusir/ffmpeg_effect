@@ -35,5 +35,10 @@ public class EffectConst {
 
     public static final int MSG_ERROR_AVCODE_OPEN_FAILED = 600;
 
+    public static final int MSG_ERROR_FFMPEG_INIT_ERROR = 700;
+
+    public static final int MSG_ERROR_eglCreateContext_ERROR = 800;
+
+    public static final int MSG_ERROR_eglMakeCurrent_ERROR = 900;
 
 }
